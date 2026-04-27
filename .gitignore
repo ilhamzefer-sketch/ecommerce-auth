@@ -35,3 +35,6 @@ out/
 
 ### VS Code ###
 .vscode/
+
+bootrun.log
+bootrun.err.log
