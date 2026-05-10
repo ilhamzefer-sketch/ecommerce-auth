@@ -1,16 +1,41 @@
 spring:
   application:
     name: ecommerce-auth
-  autoconfigure:
-    exclude:
-      - org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration
-      - org.springframework.boot.autoconfigure.security.servlet.UserDetailsServiceAutoConfiguration
 
   datasource:
     url: jdbc:h2:mem:ecommerce_auth
     username: sa
     password:
     driver-class-name: org.h2.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+
+  flyway:
+    enabled: true
+    baseline-on-migrate: true
+
+application:
+  security:
+    jwt:
+      # Use a 256-bit (32-character) secret key for development. 
+      # MUST be provided via ENVIRONMENT VARIABLE in production.
+      secret-key: ${JWT_SECRET_KEY:v7I8Jm9N0P1Q2R3S4T5U6V7W8X9Y0Z1A2B3C4D5E6F7G8H9I0J1K2L3M4N5O6P7Q}
+      expiration: 900000 # 15 minutes in milliseconds
+      refresh-token:
+        expiration: 604800000 # 7 days in milliseconds
+        cookie:
+          name: refresh_token
+          max-age: 604800 # 7 days in seconds
+          secure: true # Assume HTTPS
+          http-only: true
+          same-site: Strict
+          path: /api/auth/refresh
 
 server:
   port: 8080
