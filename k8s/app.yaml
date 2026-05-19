@@ -1,0 +1,49 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ecommerce-auth-app
+  labels:
+    app: ecommerce-auth-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ecommerce-auth-app
+  template:
+    metadata:
+      labels:
+        app: ecommerce-auth-app
+    spec:
+      containers:
+      - name: ecommerce-auth-app
+        image: ecommerce-auth-ecommerce-auth:latest
+        imagePullPolicy: Never # Use local image built by docker-compose/docker build
+        ports:
+        - containerPort: 8080
+        env:
+        - name: SPRING_PROFILES_ACTIVE
+          value: "postgres"
+        - name: SPRING_DATASOURCE_URL
+          value: "jdbc:postgresql://postgres-service:5432/ecommerce?currentSchema=ecommerce_auth"
+        - name: SPRING_DATASOURCE_USERNAME
+          value: "postgres"
+        - name: SPRING_DATASOURCE_PASSWORD
+          value: "password"
+        - name: SPRING_FLYWAY_SCHEMAS
+          value: "ecommerce_auth"
+        - name: SPRING_FLYWAY_CREATE_SCHEMAS
+          value: "true"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ecommerce-auth-service
+spec:
+  type: NodePort
+  selector:
+    app: ecommerce-auth-app
+  ports:
+    - protocol: TCP
+      port: 8080
+      targetPort: 8080
+      nodePort: 30080
