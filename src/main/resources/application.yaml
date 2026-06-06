@@ -35,6 +35,8 @@ management:
       application: ${spring.application.name}
 
 application:
+  openapi:
+    gateway-url: ${API_GATEWAY_PUBLIC_URL:http://localhost:8080}
   security:
     jwt:
       # Use a 256-bit (32-character) secret key for development. 
