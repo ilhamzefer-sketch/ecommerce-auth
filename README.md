@@ -43,7 +43,7 @@ This project is a professional-grade, secure authentication and authorization sy
 1.  Configure your database in `src/main/resources/application.yaml`.
 2.  Set your `JWT_SECRET_KEY` (minimum 32 characters).
 3.  Run the application using `./gradlew bootRun`.
-4.  Access Swagger UI at: `http://localhost:8080/swagger-ui.html`
+4.  Access Swagger UI through the API Gateway at: `http://localhost:8080/swagger-ui/index.html`
 
 ## Testing
 

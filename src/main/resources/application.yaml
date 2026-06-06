@@ -9,6 +9,7 @@ spring:
     driver-class-name: org.h2.Driver
 
   jpa:
+    open-in-view: false
     hibernate:
       ddl-auto: validate
     show-sql: true
@@ -45,13 +46,13 @@ application:
         cookie:
           name: refresh_token
           max-age: 604800 # 7 days in seconds
-          secure: true # Assume HTTPS
+          secure: ${REFRESH_COOKIE_SECURE:false}
           http-only: true
           same-site: Strict
-          path: /api/auth/refresh
+          path: /api/auth
 
 server:
-  port: 8080
+  port: 8081
 
 ---
 spring:
