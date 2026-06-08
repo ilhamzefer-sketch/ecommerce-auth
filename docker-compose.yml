@@ -6,12 +6,11 @@ services:
     ports:
       - "8081:8081"
     environment:
-      - SPRING_PROFILES_ACTIVE=postgres
-      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/ecommerce?currentSchema=ecommerce_auth
-      - SPRING_DATASOURCE_USERNAME=postgres
-      - SPRING_DATASOURCE_PASSWORD=password
-      - SPRING_FLYWAY_SCHEMAS=ecommerce_auth
-      - SPRING_FLYWAY_CREATE_SCHEMAS=true
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/ecommerce?currentSchema=ecommerce_auth
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: password
+      SPRING_FLYWAY_SCHEMAS: ecommerce_auth
+      SPRING_FLYWAY_CREATE_SCHEMAS: "true"
     depends_on:
       postgres:
         condition: service_healthy

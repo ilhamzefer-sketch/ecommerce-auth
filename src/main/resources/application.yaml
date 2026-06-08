@@ -3,10 +3,10 @@ spring:
     name: ecommerce-auth
 
   datasource:
-    url: jdbc:h2:mem:ecommerce
-    username: sa
-    password:
-    driver-class-name: org.h2.Driver
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/ecommerce?currentSchema=ecommerce_auth}
+    username: ${SPRING_DATASOURCE_USERNAME:postgres}
+    password: ${SPRING_DATASOURCE_PASSWORD:password}
+    driver-class-name: org.postgresql.Driver
 
   jpa:
     open-in-view: false
@@ -20,6 +20,8 @@ spring:
   flyway:
     enabled: true
     baseline-on-migrate: true
+    schemas: ${SPRING_FLYWAY_SCHEMAS:ecommerce_auth}
+    create-schemas: ${SPRING_FLYWAY_CREATE_SCHEMAS:true}
 
 management:
   endpoints:
@@ -55,17 +57,3 @@ application:
 
 server:
   port: 8081
-
----
-spring:
-  config:
-    activate:
-      on-profile: postgres
-  datasource:
-    url: jdbc:postgresql://localhost:5433/ecommerce?currentSchema=ecommerce_auth
-    username: postgres
-    password: password
-    driver-class-name: org.postgresql.Driver
-  flyway:
-    schemas: ecommerce_auth
-    create-schemas: true
