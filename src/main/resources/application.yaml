@@ -55,5 +55,10 @@ application:
           same-site: Strict
           path: /api/auth
 
+springdoc:
+  swagger-ui:
+    syntax-highlight:
+      theme: tomorrow-night
+
 server:
   port: 8081
