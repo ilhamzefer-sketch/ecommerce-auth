@@ -26,5 +26,8 @@ COPY --from=build /app/build/libs/*SNAPSHOT.jar app.jar
 # Expose port
 EXPOSE 8081
 
+HEALTHCHECK --interval=10s --timeout=5s --start-period=30s --retries=12 \
+  CMD wget -qO- http://127.0.0.1:8081/actuator/health >/dev/null || exit 1
+
 # Run the jar file
 ENTRYPOINT ["java", "-jar", "app.jar"]
