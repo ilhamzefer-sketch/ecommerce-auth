@@ -5,6 +5,7 @@ import az.ilham.ecommerceauth.dto.auth.AuthResponse;
 import az.ilham.ecommerceauth.dto.auth.RegisterRequest;
 import az.ilham.ecommerceauth.security.JwtService;
 import az.ilham.ecommerceauth.user.entity.Role;
+import az.ilham.ecommerceauth.user.entity.RoleName;
 import az.ilham.ecommerceauth.user.entity.User;
 import az.ilham.ecommerceauth.user.repository.RoleRepository;
 import az.ilham.ecommerceauth.user.repository.UserRepository;
@@ -55,7 +56,7 @@ public class AuthService {
             throw new UserAlreadyExistsException("Email is already registered");
         }
 
-        Role userRole = roleRepository.findByName("ROLE_USER")
+        Role userRole = roleRepository.findByName(RoleName.USER)
                 .orElseThrow(() -> new RuntimeException("Default role not found"));
 
         User user = User.builder()

@@ -6,6 +6,7 @@ import az.ilham.ecommerceauth.dto.auth.AuthResponse;
 import az.ilham.ecommerceauth.dto.auth.RegisterRequest;
 import az.ilham.ecommerceauth.security.JwtService;
 import az.ilham.ecommerceauth.user.entity.Role;
+import az.ilham.ecommerceauth.user.entity.RoleName;
 import az.ilham.ecommerceauth.user.entity.User;
 import az.ilham.ecommerceauth.user.repository.RoleRepository;
 import az.ilham.ecommerceauth.user.repository.UserRepository;
@@ -67,7 +68,7 @@ class AuthServiceTest {
         // Arrange
         when(userRepository.findByUsername(any())).thenReturn(Optional.empty());
         when(userRepository.findByEmail(any())).thenReturn(Optional.empty());
-        when(roleRepository.findByName("ROLE_USER")).thenReturn(Optional.of(new Role(1L, "ROLE_USER")));
+        when(roleRepository.findByName(RoleName.USER)).thenReturn(Optional.of(new Role(1L, RoleName.USER)));
         when(passwordEncoder.encode(any())).thenReturn("hashed_password");
 
         // Act

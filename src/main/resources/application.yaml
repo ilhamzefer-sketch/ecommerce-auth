@@ -38,12 +38,20 @@ management:
 
 application:
   openapi:
-    gateway-url: ${API_GATEWAY_PUBLIC_URL:http://localhost:8080}
+    gateway-url: "${API_GATEWAY_PUBLIC_URL:http://localhost:8080}"
+  bootstrap:
+    admin:
+      enabled: ${BOOTSTRAP_ADMIN_ENABLED:false}
+      username: "${BOOTSTRAP_ADMIN_USERNAME:}"
+      email: "${BOOTSTRAP_ADMIN_EMAIL:}"
+      password: "${BOOTSTRAP_ADMIN_PASSWORD:}"
+      first-name: "${BOOTSTRAP_ADMIN_FIRST_NAME:System}"
+      last-name: "${BOOTSTRAP_ADMIN_LAST_NAME:Admin}"
   security:
     jwt:
       # Use a 256-bit (32-character) secret key for development. 
       # MUST be provided via ENVIRONMENT VARIABLE in production.
-      secret-key: ${JWT_SECRET_KEY:v7I8Jm9N0P1Q2R3S4T5U6V7W8X9Y0Z1A2B3C4D5E6F7G8H9I0J1K2L3M4N5O6P7Q}
+      secret-key: "${JWT_SECRET_KEY:v7I8Jm9N0P1Q2R3S4T5U6V7W8X9Y0Z1A2B3C4D5E6F7G8H9I0J1K2L3M4N5O6P7Q}"
       expiration: 900000 # 15 minutes in milliseconds
       refresh-token:
         expiration: 604800000 # 7 days in milliseconds
