@@ -45,22 +45,30 @@ public class AuthService {
     private final CustomUserDetailsService userDetailsService;
     private final PasswordResetTokenRepository passwordResetTokenRepository;
     private final EmailVerificationTokenRepository emailVerificationTokenRepository;
+    private final PhoneNumberNormalizer phoneNumberNormalizer;
 
     @Transactional
     public AuthResponse register(RegisterRequest request) {
-        if (userRepository.findByUsername(request.getUsername()).isPresent()) {
+        String email = request.getEmail().trim().toLowerCase();
+        String phoneNumber = phoneNumberNormalizer.normalize(request.getPhoneNumber());
+
+        if (userRepository.existsByUsernameIgnoreCase(request.getUsername().trim())) {
             throw new UserAlreadyExistsException("Username is already taken");
         }
-        if (userRepository.findByEmail(request.getEmail()).isPresent()) {
+        if (userRepository.existsByEmailIgnoreCase(email)) {
             throw new UserAlreadyExistsException("Email is already registered");
+        }
+        if (userRepository.existsByPhoneNumber(phoneNumber)) {
+            throw new UserAlreadyExistsException("Phone number is already registered");
         }
 
         Role userRole = roleRepository.findByName("ROLE_USER")
                 .orElseThrow(() -> new RuntimeException("Default role not found"));
 
         User user = User.builder()
-                .username(request.getUsername())
-                .email(request.getEmail())
+                .username(request.getUsername().trim().toLowerCase())
+                .email(email)
+                .phoneNumber(phoneNumber)
                 .passwordHash(passwordEncoder.encode(request.getPassword()))
                 .firstName(request.getFirstName())
                 .lastName(request.getLastName())
@@ -68,12 +76,12 @@ public class AuthService {
                 .enabled(true)
                 .accountNonLocked(true)
                 .emailVerified(false)
+                .phoneVerified(false)
                 .build();
 
         userRepository.save(user);
         log.info("New user registered: {}", user.getUsername());
 
-        // Generate verification token (logic for Level 9)
         generateEmailVerificationToken(user);
 
         return AuthResponse.builder()
@@ -90,12 +98,11 @@ public class AuthService {
             PasswordResetToken resetToken = PasswordResetToken.builder()
                     .user(user)
                     .tokenHash(hash)
-                    .expiresAt(LocalDateTime.now().plusHours(2)) // 2 hours expiry
+                    .expiresAt(LocalDateTime.now().plusHours(2))
                     .build();
             
             passwordResetTokenRepository.save(resetToken);
             
-            // In a real app, send email here with the 'token' (plain text)
             System.out.println("Password reset token for " + user.getEmail() + ": " + token);
         });
     }
@@ -119,7 +126,6 @@ public class AuthService {
         resetToken.setUsedAt(LocalDateTime.now());
         passwordResetTokenRepository.save(resetToken);
 
-        // Security best practice: logout from all devices on password change
         refreshTokenService.revokeAllUserTokens(user);
     }
 
@@ -149,17 +155,16 @@ public class AuthService {
         EmailVerificationToken verificationToken = EmailVerificationToken.builder()
                 .user(user)
                 .tokenHash(hash)
-                .expiresAt(LocalDateTime.now().plusDays(1)) // 24 hours expiry
+                .expiresAt(LocalDateTime.now().plusDays(1))
                 .build();
 
         emailVerificationTokenRepository.save(verificationToken);
         
-        // In a real app, send email here with the 'token'
         System.out.println("Email verification token for " + user.getEmail() + ": " + token);
     }
 
     @Transactional
-    public LoginResult login(LoginRequest request, String userAgent, String ipAddress) {
+    public AuthLoginResult login(LoginRequest request, String userAgent, String ipAddress) {
         try {
             authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(request.getUsernameOrEmail(), request.getPassword())
@@ -169,13 +174,13 @@ public class AuthService {
             throw new BadCredentialsException("Invalid username or password");
         }
 
-        User user = userRepository.findByUsername(request.getUsernameOrEmail())
-                .or(() -> userRepository.findByEmail(request.getUsernameOrEmail()))
+        User user = userRepository.findByUsernameIgnoreCase(request.getUsernameOrEmail().trim())
+                .or(() -> userRepository.findByEmailIgnoreCase(request.getUsernameOrEmail().trim()))
+                .or(() -> userRepository.findByPhoneNumber(normalizeLoginIdentifier(request.getUsernameOrEmail())))
                 .orElseThrow();
 
-        // Update last login
         user.setLastLoginAt(LocalDateTime.now());
-        user.setFailedLoginAttempts(0); // reset on success
+        user.setFailedLoginAttempts(0);
         userRepository.save(user);
 
         UserDetails userDetails = userDetailsService.loadUserByUsername(user.getUsername());
@@ -189,15 +194,14 @@ public class AuthService {
                 .message("Login successful")
                 .build();
 
-        return new LoginResult(response, refreshToken);
+        return new AuthLoginResult(response, refreshToken);
     }
 
     @Transactional
-    public LoginResult refreshToken(String refreshTokenValue, String userAgent, String ipAddress) {
+    public AuthLoginResult refreshToken(String refreshTokenValue, String userAgent, String ipAddress) {
         RefreshToken refreshToken = refreshTokenService.findByToken(refreshTokenValue);
 
         if (refreshToken == null || !refreshToken.isActive()) {
-            // Potential reuse attack or invalid token
             if (refreshToken != null) {
                 refreshTokenService.revokeAllUserTokens(refreshToken.getUser());
             }
@@ -206,10 +210,8 @@ public class AuthService {
 
         User user = refreshToken.getUser();
         
-        // Revoke current token (rotation)
         refreshTokenService.revokeToken(refreshToken);
 
-        // Generate new tokens
         UserDetails userDetails = userDetailsService.loadUserByUsername(user.getUsername());
         String newAccessToken = jwtService.generateToken(userDetails);
         String newRefreshTokenValue = refreshTokenService.createRefreshToken(user, userAgent, ipAddress);
@@ -220,7 +222,7 @@ public class AuthService {
                 .message("Token refreshed successfully")
                 .build();
 
-        return new LoginResult(response, newRefreshTokenValue);
+        return new AuthLoginResult(response, newRefreshTokenValue);
     }
 
     @Transactional
@@ -239,5 +241,11 @@ public class AuthService {
         }
     }
 
-    public record LoginResult(AuthResponse response, String refreshToken) {}
+    private String normalizeLoginIdentifier(String identifier) {
+        try {
+            return phoneNumberNormalizer.normalize(identifier);
+        } catch (IllegalArgumentException exception) {
+            return identifier;
+        }
+    }
 }

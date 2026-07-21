@@ -54,6 +54,12 @@ application:
           http-only: true
           same-site: Strict
           path: /api/auth
+  bootstrap-admin:
+    enabled: ${BOOTSTRAP_ADMIN_ENABLED:false}
+    username: ${BOOTSTRAP_ADMIN_USERNAME:admin}
+    email: ${BOOTSTRAP_ADMIN_EMAIL:admin@mizan.local}
+    phone-number: ${BOOTSTRAP_ADMIN_PHONE:+994500000000}
+    password: ${BOOTSTRAP_ADMIN_PASSWORD:ChangeMe123!}
 
 springdoc:
   swagger-ui:

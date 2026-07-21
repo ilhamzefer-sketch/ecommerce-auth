@@ -1,5 +1,7 @@
 package az.ilham.ecommerceauth.user.controller;
 
+import az.ilham.ecommerceauth.dto.user.UserProfileDto;
+import az.ilham.ecommerceauth.user.service.UserProfileService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -11,14 +13,16 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-
-import java.util.Map;
+import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequestMapping("/api/users")
 @Tag(name = "İstifadəçi Profili", description = "İstifadəçi profilinin idarə edilməsi üçün endpoint-lər")
 @SecurityRequirement(name = "bearerAuth")
+@RequiredArgsConstructor
 public class UserController {
+
+    private final UserProfileService userProfileService;
 
     @GetMapping("/me")
     @Operation(summary = "Cari istifadəçinin profilini əldə et")
@@ -27,11 +31,7 @@ public class UserController {
             @ApiResponse(responseCode = "401", description = "Access token yoxdur, etibarsızdır və ya müddəti bitib"),
             @ApiResponse(responseCode = "403", description = "İstifadəçinin bu resursa giriş icazəsi yoxdur")
     })
-    public ResponseEntity<?> getCurrentUser(@AuthenticationPrincipal UserDetails userDetails) {
-        return ResponseEntity.ok(Map.of(
-                "username", userDetails.getUsername(),
-                "roles", userDetails.getAuthorities(),
-                "message", "This is a protected profile information"
-        ));
+    public ResponseEntity<UserProfileDto> getCurrentUser(@AuthenticationPrincipal UserDetails userDetails) {
+        return ResponseEntity.ok(userProfileService.getByUsername(userDetails.getUsername()));
     }
 }

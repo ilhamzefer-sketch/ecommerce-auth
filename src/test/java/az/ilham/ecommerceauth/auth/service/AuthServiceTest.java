@@ -45,6 +45,8 @@ class AuthServiceTest {
     private PasswordResetTokenRepository passwordResetTokenRepository;
     @Mock
     private EmailVerificationTokenRepository emailVerificationTokenRepository;
+    @Mock
+    private PhoneNumberNormalizer phoneNumberNormalizer;
 
     @InjectMocks
     private AuthService authService;
@@ -56,6 +58,7 @@ class AuthServiceTest {
         registerRequest = RegisterRequest.builder()
                 .username("testuser")
                 .email("test@example.com")
+                .phoneNumber("+994501112233")
                 .password("password123")
                 .firstName("Test")
                 .lastName("User")
@@ -65,8 +68,7 @@ class AuthServiceTest {
     @Test
     void register_ShouldSaveUserAndReturnSuccessMessage() {
         // Arrange
-        when(userRepository.findByUsername(any())).thenReturn(Optional.empty());
-        when(userRepository.findByEmail(any())).thenReturn(Optional.empty());
+        when(phoneNumberNormalizer.normalize(any())).thenReturn("+994501112233");
         when(roleRepository.findByName("ROLE_USER")).thenReturn(Optional.of(new Role(1L, "ROLE_USER")));
         when(passwordEncoder.encode(any())).thenReturn("hashed_password");
 

@@ -30,8 +30,8 @@ public class JwtService {
         return jwtExpiration;
     }
 
-    public String extractUsername(String token) {
-        return extractClaim(token, Claims::getSubject);
+    public Long extractUserId(String token) {
+        return Long.valueOf(extractClaim(token, Claims::getSubject));
     }
 
     public <T> T extractClaim(String token, Function<Claims, T> claimsResolver) {
@@ -48,12 +48,14 @@ public class JwtService {
                 .map(GrantedAuthority::getAuthority)
                 .toList();
         
+        SecurityUserPrincipal principal = (SecurityUserPrincipal) userDetails;
         extraClaims.put("roles", roles);
+        extraClaims.put("username", principal.getUsername());
         extraClaims.put("token_type", "access");
 
         return Jwts.builder()
                 .claims(extraClaims)
-                .subject(userDetails.getUsername())
+                .subject(principal.userId().toString())
                 .issuedAt(new Date(System.currentTimeMillis()))
                 .expiration(new Date(System.currentTimeMillis() + jwtExpiration))
                 .id(UUID.randomUUID().toString())
@@ -62,8 +64,8 @@ public class JwtService {
     }
 
     public boolean isTokenValid(String token, UserDetails userDetails) {
-        final String username = extractUsername(token);
-        return (username.equals(userDetails.getUsername())) && !isTokenExpired(token);
+        SecurityUserPrincipal principal = (SecurityUserPrincipal) userDetails;
+        return extractUserId(token).equals(principal.userId()) && !isTokenExpired(token);
     }
 
     private boolean isTokenExpired(String token) {

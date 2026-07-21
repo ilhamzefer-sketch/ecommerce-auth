@@ -1,6 +1,7 @@
 package az.ilham.ecommerceauth.auth.controller;
 
 import az.ilham.ecommerceauth.auth.service.AuthService;
+import az.ilham.ecommerceauth.auth.service.AuthLoginResult;
 import az.ilham.ecommerceauth.auth.service.RefreshTokenService;
 import az.ilham.ecommerceauth.dto.auth.AuthResponse;
 import az.ilham.ecommerceauth.dto.auth.RegisterRequest;
@@ -87,7 +88,7 @@ public class AuthController {
         String userAgent = request.getHeader(HttpHeaders.USER_AGENT);
         String ipAddress = request.getRemoteAddr();
 
-        AuthService.LoginResult result = authService.login(loginRequest, userAgent, ipAddress);
+        AuthLoginResult result = authService.login(loginRequest, userAgent, ipAddress);
 
         ResponseCookie refreshTokenCookie = refreshTokenService.createRefreshTokenResponseCookie(result.refreshToken());
 
@@ -108,7 +109,7 @@ public class AuthController {
         String userAgent = request.getHeader(HttpHeaders.USER_AGENT);
         String ipAddress = request.getRemoteAddr();
 
-        AuthService.LoginResult result = authService.refreshToken(refreshToken, userAgent, ipAddress);
+        AuthLoginResult result = authService.refreshToken(refreshToken, userAgent, ipAddress);
 
         ResponseCookie refreshTokenCookie = refreshTokenService.createRefreshTokenResponseCookie(result.refreshToken());
 
