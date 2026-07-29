@@ -13,6 +13,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -78,7 +79,10 @@ public class AuthController {
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Giriş uğurludur, access və refresh token yaradıldı"),
             @ApiResponse(responseCode = "400", description = "Sorğu məlumatları validasiya tələblərinə uyğun deyil"),
-            @ApiResponse(responseCode = "401", description = "İstifadəçi adı, e-poçt və ya şifrə yanlışdır"),
+            @ApiResponse(
+                    responseCode = "401",
+                    description = "İstifadəçi adı, e-poçt, telefon nömrəsi və ya şifrə yanlışdır"
+            ),
             @ApiResponse(responseCode = "500", description = "Serverdə gözlənilməz xəta baş verdi")
     })
     public ResponseEntity<AuthResponse> login(
@@ -202,7 +206,7 @@ public class AuthController {
         if (request.getCookies() == null) {
             throw new BadCredentialsException("Refresh token cookie is missing");
         }
-        for (jakarta.servlet.http.Cookie cookie : request.getCookies()) {
+        for (Cookie cookie : request.getCookies()) {
             if (cookieName.equals(cookie.getName())) {
                 return cookie.getValue();
             }
